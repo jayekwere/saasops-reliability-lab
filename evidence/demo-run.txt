@@ -1,0 +1,15 @@
+
+> saasops-reliability-lab@1.0.0 demo
+> node --import tsx scripts/demo.ts --write
+
+{
+  "scope": "scripted local HTTP and DNS drill, not human response or production availability",
+  "observations": 15,
+  "incidentsOpened": 2,
+  "incidentsResolved": 2,
+  "scriptedFailureDetectionMs": 1126,
+  "scriptedRecoveryVerificationMs": 1126,
+  "configurationRestored": true,
+  "configVersion": 3,
+  "auditIntegrity": true
+}

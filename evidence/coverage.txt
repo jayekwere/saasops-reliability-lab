@@ -1,0 +1,67 @@
+
+> saasops-reliability-lab@1.0.0 coverage
+> node --experimental-test-coverage --import tsx --test --test-concurrency=1 test/*.test.ts
+
+✔ real HTTP and DNS probes distinguish healthy, status failure and DNS failure (193.954833ms)
+✔ incident recovery requires the state machine, version and two fresh successes (19.863584ms)
+✔ duplicate incidents are suppressed while unresolved and dependency overlap stays a candidate (12.559334ms)
+✔ unobserved, stale and rapidly sampled windows do not become eligible availability claims (21.3555ms)
+✔ collection concurrency, minimum intervals and long-gap failures are bounded (12.794333ms)
+✔ signed backup restore is independently approved, version bound and idempotent (5.564958ms)
+✔ backup edits, foreign tenants, stale configuration and changed approvals cannot restore (7.428667ms)
+✔ fixed target configuration rejects arbitrary endpoints, credentials and dependency cycles (1.346125ms)
+✔ configured probes reject private and metadata ranges before connecting (0.436958ms)
+✔ HTTP API enforces operation roles, tenant isolation and fixed collection input (28.944916ms)
+✔ real TLS handshake verifies trusted hostname and reports expiration threshold (7.852584ms)
+✔ real TLS rejects untrusted certificates and hostname mismatch (4.972375ms)
+✔ a regularly observed hour has an eligible sample ratio and explicit budget arithmetic (2.28575ms)
+✔ bounded observation retention preserves incident-referenced evidence (153.107459ms)
+✔ signed access tokens map application permissions from the server registry (13.041833ms)
+✔ access-token constraint: issuer (1.449167ms)
+✔ access-token constraint: audience (0.967125ms)
+✔ access-token constraint: expired (0.843ms)
+✔ access-token constraint: future (0.553167ms)
+✔ access-token constraint: lifetime (0.515958ms)
+✔ access-token constraint: subject (0.428958ms)
+✔ access-token constraint: type (0.505625ms)
+✔ access-token constraint: jti (0.4715ms)
+✔ access-token constraint: forged-privileges (0.452875ms)
+✔ missing, malformed, foreign, symmetric and oversized bearer tokens fail closed (1.279167ms)
+✔ RS256 public verification works and private JWKS or duplicate registry subjects reject (25.734042ms)
+✔ canonical request fingerprints preserve order of arrays and ignore object key order (0.271542ms)
+✔ rate buckets expire, enforce capacity and reject excess requests (0.154125ms)
+✔ audit edits and middle deletion fail verification; persistence and wrong-key checks work (5.853791ms)
+✔ nested transactions roll back only the failed nested savepoint (0.551208ms)
+✔ independent review and execution reject self-approval even with combined roles (0.947583ms)
+✔ approval expiry, changed policy, wrong digest and rejection prevent dispatch (0.795375ms)
+✔ idempotency binds actor and exact operation and never claims a completed plan twice (0.89675ms)
+✔ HTTP boundary rejects untrusted origins, hosts, tokens, oversized bodies and excess traffic (84.176042ms)
+✔ fixed endpoint transport refuses unsafe URL shapes, redirects, oversized and malformed responses (18.017958ms)
+✔ completed operation replay remains read-only after reopening durable state (5.063292ms)
+✔ a failed transaction start leaves the next request in a fresh immediate transaction (0.368125ms)
+ℹ tests 37
+ℹ suites 0
+ℹ pass 37
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2360.844583
+ℹ start of coverage report
+ℹ ----------------------------------------------------------------------------
+ℹ file            | line % | branch % | funcs % | uncovered lines
+ℹ ----------------------------------------------------------------------------
+ℹ src             |        |          |         |
+ℹ  app.ts         |  91.01 |    81.82 |   54.55 | 47 52-55 58-60
+ℹ  approvals.ts   |  95.10 |    85.42 |   88.24 | 16 35 73 87 89-91
+ℹ  http.ts        |  90.20 |    92.31 |   53.85 | 55-58 61 67 74 77-79
+ℹ  lab.ts         | 100.00 |    85.19 |  100.00 |
+ℹ  net.ts         |  97.14 |    75.76 |  100.00 | 37 42
+ℹ  probes.ts      |  99.12 |    84.52 |   90.48 | 153-154
+ℹ  reliability.ts |  98.04 |    92.52 |  100.00 | 100 139-140 167 191-192 226
+ℹ  security.ts    | 100.00 |    96.67 |  100.00 |
+ℹ  store.ts       |  97.30 |    94.12 |  100.00 | 14-16 67
+ℹ ----------------------------------------------------------------------------
+ℹ all files       |  97.11 |    89.04 |   90.74 |
+ℹ ----------------------------------------------------------------------------
+ℹ end of coverage report

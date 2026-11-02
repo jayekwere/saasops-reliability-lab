@@ -1,0 +1,12 @@
+[
+  {
+    "id": "public-service",
+    "label": "Explicit public service",
+    "kind": "http",
+    "url": "https://example.invalid/health",
+    "expectedStatus": 200,
+    "dependencies": [],
+    "expectedIntervalSeconds": 30,
+    "objective": 0.99
+  }
+]

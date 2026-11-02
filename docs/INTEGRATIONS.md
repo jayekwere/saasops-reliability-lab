@@ -1,0 +1,9 @@
+# Probe and integration scope
+
+HTTP probes use GET, a configured expected status, a fixed path without credentials/query/fragment, a bounded header response and a deadline. The response body is not retained. There is no authenticated browser transaction or SaaS business workflow. TLS probes validate system trust, the original hostname and a minimum remaining-day threshold; custom trust is used only by controlled tests. DNS probes compare the A-record answer set with explicitly expected addresses. DNS failure or answer mismatch is an observation, not proof that the whole organization is affected.
+
+Configured mode validates public destination addresses, then pins a checked address for HTTP/TLS. This prevents an untrusted request or DNS re-resolution from turning a probe into a generic internal fetch. Keep an egress allowlist as a deployment boundary. Multi-address sites are observed at one selected checked address; not every backend or network vantage is tested. Proxy environment variables are not used to route node HTTP/TLS probe sockets.
+
+The local lab has actual HTTP and UDP DNS servers, controlled directory/workspace failure and independent DNS failure. Tests use fresh local TLS certificates and real sockets. The recorded drill measures scripted local behavior. No native SaaS administrative API, cloud account, managed monitoring service, conferencing session, ticketing platform, public DNS record or provider configuration was modified or accepted live. Optional scheduled collection is a local timer and is not durable across shutdown.
+
+This application does not depend on Prometheus or present itself as its exporter. It exposes JSON investigation data and a purpose-built workbench. Integrating a production observability stack, persistent scheduler, multiple probe locations or a ticket system needs a separately reviewed adapter and validation evidence. The direct probe implementation keeps local demos credential free and inspectable.

@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/style.css" />
+    <script type="module" src="/app.js"></script>
+    <title>SaaSOps Lab | Operations workspace</title>
+  </head>
+  <body class="saas">
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="brand"><span class="mark">◇</span>SaaSOps Lab</div>
+        <div>
+          <p class="overline">Operations workspace</p>
+          <nav class="nav">
+            <a href="#services" class="active">◈ &nbsp; Service health</a
+            ><a href="#incidents" class="">⌁ &nbsp; Incidents</a
+            ><a href="#recovery" class="">↻ &nbsp; Recovery</a
+            ><a href="#activity" class="">▤ &nbsp; Evidence</a>
+          </nav>
+        </div>
+        <div class="side-note">
+          <span class="dot"></span> Scoped. Verified. Recorded.<br />Independent review by design<br /><br />v1.0.0
+          · Reference service
+        </div>
+      </aside>
+      <div class="workspace">
+        <header class="topbar">
+          <div class="crumb">Workspace / <b>SaaSOps Lab</b></div>
+          <div class="connection">
+            <label for="token">Access token</label
+            ><input
+              id="token"
+              type="password"
+              placeholder="Paste your access token"
+              autocomplete="off"
+              aria-label="Access token"
+            /><button id="connect">Connect</button
+            ><button id="disconnect" class="ghost">Disconnect</button
+            ><span id="status" class="status" role="status">Disconnected</span>
+          </div>
+        </header>
+        <main class="main">
+          <div class="heading">
+            <div>
+              <span class="overline">Observe the failure. Prove the recovery.</span>
+              <h1>Reliability, backed by evidence.</h1>
+              <p>Connect service health, dependency impact, and verified operational recovery.</p>
+            </div>
+            <button id="refresh" class="ghost">↻ Refresh</button>
+          </div>
+          <div id="notice" class="notice" role="status">
+            Connect to your workspace to load records and operational evidence.
+          </div>
+          <section class="stats" aria-label="Operational metrics">
+            <article class="stat">
+              <div class="stat-top">Healthy services<span class="stat-icon">✓</span></div>
+              <b class="value" id="healthy-count">0</b><small>Fresh successful probes</small>
+            </article>
+            <article class="stat">
+              <div class="stat-top">Failing services<span class="stat-icon">⌁</span></div>
+              <b class="value" id="failing-count">0</b><small>Observed failures</small>
+            </article>
+            <article class="stat">
+              <div class="stat-top">Open incidents<span class="stat-icon">◷</span></div>
+              <b class="value" id="incident-count">0</b><small>Tracked recovery</small>
+            </article>
+            <article class="stat">
+              <div class="stat-top">Recorded observations<span class="stat-icon">▤</span></div>
+              <b class="value" id="observation-count">0</b><small>Bounded recent evidence</small>
+            </article>
+          </section>
+          <div class="grid">
+            <div>
+              <section class="panel" id="service-panel">
+                <div class="panel-head">
+                  <h2>Service health</h2>
+                  <span class="badge">Active probes</span>
+                </div>
+                <div id="services" class="empty">Connect and collect observations.</div>
+              </section>
+              <section class="panel" id="incident-panel">
+                <div class="panel-head">
+                  <h2>Incident workspace</h2>
+                  <span class="badge">Two failures to open</span>
+                </div>
+                <div id="incidents" class="empty">No incidents loaded.</div>
+              </section>
+              <section class="panel" id="review">
+                <div class="panel-head">
+                  <h2>Reviewed operations</h2>
+                  <span class="badge">Exact plan binding</span>
+                </div>
+                <div id="plans" class="empty">Connect to load plans.</div>
+              </section>
+              <section class="panel" id="activity">
+                <div class="panel-head">
+                  <h2>Activity ledger</h2>
+                  <span class="badge">Tenant scoped</span>
+                </div>
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Time</th>
+                        <th>Actor</th>
+                        <th>Evidence</th>
+                      </tr>
+                    </thead>
+                    <tbody id="audit"></tbody>
+                  </table>
+                </div>
+              </section>
+            </div>
+            <div>
+              <section class="panel" id="probes">
+                <div class="panel-head">
+                  <h2>Probe controls</h2>
+                  <span class="badge">Fixed targets</span>
+                </div>
+                <div class="panel-body">
+                  <p>
+                    Collect bounded HTTP, DNS, and configured TLS observations from approved
+                    targets.
+                  </p>
+                  <button id="collect" class="primary">Collect observations</button>
+                  <p class="subtle">
+                    Metrics describe probe samples. They do not estimate all user traffic.
+                  </p>
+                </div>
+              </section>
+              <section class="panel" id="fault">
+                <div class="panel-head">
+                  <h2>Failure exercise</h2>
+                  <span class="badge">Local lab only</span>
+                </div>
+                <div class="panel-body">
+                  <p>
+                    Interrupt a local directory or DNS responder and inspect the downstream impact.
+                  </p>
+                  <div class="toolbar">
+                    <button id="interrupt">Interrupt directory</button
+                    ><button id="interrupt-dns">Interrupt DNS</button
+                    ><button id="recover">Restore lab services</button>
+                  </div>
+                  <label for="incident-note">Incident note</label
+                  ><textarea
+                    id="incident-note"
+                    placeholder="Record the evidence, action taken, and follow-up."
+                  ></textarea>
+                </div>
+              </section>
+              <section class="panel" id="recovery">
+                <div class="panel-head">
+                  <h2>Configuration recovery</h2>
+                  <span class="badge">Signed, approved, verified</span>
+                </div>
+                <div class="panel-body">
+                  <p>
+                    Back up the service catalog, change an objective, then restore through
+                    independent review.
+                  </p>
+                  <button id="backup">Create signed backup</button
+                  ><label for="backup-select">Recorded backup</label
+                  ><select id="backup-select" class="inline-input"></select>
+                  <div class="toolbar"><button id="plan-restore">Plan restore</button></div>
+                  <details>
+                    <summary>Change an objective</summary>
+                    <label for="objective-target">Service</label
+                    ><select id="objective-target" class="inline-input"></select
+                    ><label for="objective">Success objective, 0.90 to 0.9999</label
+                    ><input id="objective" class="inline-input" value="0.95" />
+                    <div class="toolbar">
+                      <button id="change-objective">Record objective change</button>
+                    </div>
+                  </details>
+                </div>
+              </section>
+              <section class="panel" id="dependency-panel">
+                <div class="panel-head">
+                  <h2>Dependency context</h2>
+                  <span class="badge">Investigation candidates</span>
+                </div>
+                <div id="dependencies" class="panel-body">No observations loaded.</div>
+              </section>
+            </div>
+          </div>
+          <div class="footer">
+            <span>Evidence before assumptions · Explicit trust boundaries</span
+            ><span>Local assets · No telemetry</span>
+          </div>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>
