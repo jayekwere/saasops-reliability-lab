@@ -5,11 +5,13 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { createServer } from 'node:tls';
+import { createServer as tcpServer, type Socket } from 'node:net';
+import { createSocket } from 'node:dgram';
 import { startLab } from '../src/lab.js';
 import { probe, targets, type Target } from '../src/probes.js';
 import { Reliability, type Incident } from '../src/reliability.js';
 import { Store } from '../src/store.js';
-import { demoAuth, digest, type Identity } from '../src/security.js';
+import { demoAuth, digest, Fault, type Identity } from '../src/security.js';
 import { createApp } from '../src/app.js';
 const operator: Identity = { tenant: 'sandbox', subject: 'operator', roles: ['operator'] },
   requester: Identity = { tenant: 'sandbox', subject: 'requester', roles: ['requester'] },
@@ -275,6 +277,217 @@ test('configured probes reject private and metadata ranges before connecting', a
     const observation = await probe(t, { timeout: 100 });
     assert.equal(observation.success, false);
     assert.equal(observation.reason, 'probe_destination_rejected');
+  }
+});
+test('absolute deadlines stop trickling HTTP headers and release collection for other targets', async () => {
+  const sockets = new Set<Socket>();
+  const raw = tcpServer((socket) => {
+    sockets.add(socket);
+    socket.resume();
+    socket.on('error', () => {});
+    socket.write('HTTP/1.1 200 OK\r\nX-Slow: ');
+    const drip = setInterval(() => socket.write('x'), 20);
+    const safety = setTimeout(() => socket.destroy(), 1000);
+    socket.on('close', () => {
+      sockets.delete(socket);
+      clearInterval(drip);
+      clearTimeout(safety);
+    });
+  });
+  await new Promise<void>((resolve) => raw.listen(0, '127.0.0.1', resolve));
+  const address = raw.address();
+  assert.ok(address && typeof address !== 'string');
+  const s = await setup();
+  const slow: Target = {
+    ...s.lab.targets[0]!,
+    id: 'slow',
+    dependencies: [],
+    kind: 'http',
+    url: `http://127.0.0.1:${address.port}/`,
+    expectedStatus: 200,
+  };
+  const store = new Store(':memory:', 't'.repeat(32), s.store.now);
+  const service = new Reliability(store, [slow, { ...s.lab.targets[0]!, dependencies: [] }], true, {
+    timeout: 100,
+  });
+  try {
+    for (let i = 0; i < 2; i++) {
+      if (i) s.advance();
+      const started = performance.now();
+      const pending = service.collect(operator);
+      await assert.rejects(service.collect(operator), { code: 'collection_in_progress' });
+      const result = await pending;
+      assert.equal(result.observations[0]!.reason, 'probe_deadline_exceeded');
+      assert.equal(result.observations[1]!.success, true);
+      assert.ok(performance.now() - started < 500, 'total deadline, not idle progress');
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      assert.equal(sockets.size, 0);
+    }
+  } finally {
+    for (const socket of sockets) socket.destroy();
+    await new Promise<void>((resolve) => raw.close(() => resolve()));
+    store.close();
+    await s.close();
+  }
+});
+test('expired address lookup opens no late socket for either HTTP or TLS', async () => {
+  let connections = 0;
+  const raw = tcpServer((socket) => {
+    connections++;
+    socket.destroy();
+  });
+  await new Promise<void>((resolve) => raw.listen(0, '127.0.0.1', resolve));
+  const address = raw.address();
+  assert.ok(address && typeof address !== 'string');
+  const common = {
+    id: 'late',
+    label: 'Delayed lookup fixture',
+    dependencies: [],
+    expectedIntervalSeconds: 30,
+    objective: 0.99,
+  };
+  try {
+    for (const target of [
+      {
+        ...common,
+        kind: 'http',
+        url: `https://late.example.invalid:${address.port}/`,
+        expectedStatus: 200,
+      },
+      {
+        ...common,
+        kind: 'tls',
+        hostname: 'late.example.invalid',
+        port: address.port,
+        minimumDays: 0,
+      },
+    ] as Target[]) {
+      const result = await probe(target, {
+        allowLocal: true,
+        timeout: 50,
+        lookupHost: async () => {
+          await new Promise((resolve) => setTimeout(resolve, 150));
+          return [{ address: '127.0.0.1', family: 4 }];
+        },
+      });
+      assert.equal(result.reason, 'probe_deadline_exceeded');
+      await new Promise((resolve) => setTimeout(resolve, 180));
+      assert.equal(connections, 0);
+    }
+  } finally {
+    await new Promise<void>((resolve) => raw.close(() => resolve()));
+  }
+});
+test('silent TLS and DNS peers settle at the absolute deadline and release resources', async () => {
+  const sockets = new Set<Socket>();
+  const raw = tcpServer((socket) => {
+    sockets.add(socket);
+    socket.resume();
+    socket.on('error', () => {});
+    socket.on('close', () => sockets.delete(socket));
+  });
+  const dns = createSocket('udp4');
+  dns.on('message', () => {});
+  await new Promise<void>((resolve) => raw.listen(0, '127.0.0.1', resolve));
+  await new Promise<void>((resolve) => dns.bind(0, '127.0.0.1', resolve));
+  const address = raw.address();
+  assert.ok(address && typeof address !== 'string');
+  const common = {
+    id: 'silent',
+    label: 'Silent fixture',
+    dependencies: [],
+    expectedIntervalSeconds: 30,
+    objective: 0.99,
+  };
+  try {
+    for (const target of [
+      { ...common, kind: 'tls', hostname: '127.0.0.1', port: address.port, minimumDays: 0 },
+      {
+        ...common,
+        kind: 'dns',
+        hostname: 'silent.example.invalid',
+        resolver: `127.0.0.1:${dns.address().port}`,
+        expectedAddresses: ['127.0.0.1'],
+      },
+    ] as Target[]) {
+      const start = performance.now();
+      assert.equal((await probe(target, { allowLocal: true, timeout: 100 })).success, false);
+      assert.ok(performance.now() - start < 500);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    assert.equal(sockets.size, 0);
+  } finally {
+    for (const socket of sockets) socket.destroy();
+    await new Promise<void>((resolve) => raw.close(() => resolve()));
+    dns.close();
+  }
+});
+test('demo fault authority follows the catalog owner, audits changes and fails closed', async () => {
+  const s = await setup(),
+    { auth, tokens } = await demoAuth('saasops-reliability-lab');
+  const change = (
+    app: ReturnType<typeof createApp>['app'],
+    role: string,
+    flags = { directory: true, workspace: true, dns: true },
+  ) =>
+    app.inject({
+      method: 'POST',
+      url: '/api/demo/fault',
+      headers: { host: '127.0.0.1:4430', authorization: 'Bearer ' + tokens[role] },
+      payload: flags,
+    });
+  const { app } = createApp({
+    auth,
+    store: s.store,
+    baseUrl: 'http://127.0.0.1:4430',
+    targets: s.lab.targets,
+    allowLocal: true,
+    faults: s.lab.faults,
+  });
+  const { app: custom } = createApp({
+    auth,
+    store: s.store,
+    baseUrl: 'http://127.0.0.1:4430',
+    tenant: 'isolated',
+    targets: s.lab.targets,
+    allowLocal: true,
+    faults: s.lab.faults,
+  });
+  const { app: configured } = createApp({
+    auth,
+    store: s.store,
+    baseUrl: 'http://127.0.0.1:4430',
+    targets: s.lab.targets,
+    allowLocal: true,
+  });
+  try {
+    assert.equal((await change(app, 'outsider')).statusCode, 403);
+    assert.deepEqual(s.lab.faults, { directory: false, workspace: false, dns: false });
+    assert.equal((await change(app, 'operator')).statusCode, 200);
+    assert.ok(s.store.audits('sandbox').some((e) => e.action === 'demo.fault-changed'));
+    assert.equal((await change(custom, 'operator')).statusCode, 403);
+    assert.equal(
+      (await change(custom, 'outsider', { directory: false, workspace: false, dns: false }))
+        .statusCode,
+      200,
+    );
+    assert.ok(s.store.audits('isolated').some((e) => e.action === 'demo.fault-changed'));
+    assert.equal((await change(configured, 'operator')).statusCode, 404);
+    const original = s.store.audit;
+    s.store.audit = () => {
+      throw new Fault(507, 'tenant_audit_capacity_reached');
+    };
+    try {
+      assert.equal((await change(app, 'operator')).statusCode, 507);
+    } finally {
+      s.store.audit = original;
+    }
+    assert.deepEqual(s.lab.faults, { directory: false, workspace: false, dns: false });
+  } finally {
+    await app.close();
+    await custom.close();
+    await configured.close();
+    await s.close();
   }
 });
 test('HTTP API enforces operation roles, tenant isolation and fixed collection input', async () => {

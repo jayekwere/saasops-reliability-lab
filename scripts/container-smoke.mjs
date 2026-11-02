@@ -54,6 +54,11 @@ try {
   };
   assert.equal((await fetch(base + '/api/overview')).status, 401);
   assert.equal((await call('/api/overview', 'outsider')).status, 200);
+  assert.equal(
+    (await call('/api/demo/fault', 'outsider', { directory: true, workspace: true, dns: true }))
+      .status,
+    403,
+  );
   let result = await call('/api/collect', 'operator', {});
   assert.ok(result.body.observations.every((o) => o.success));
   await call('/api/demo/fault', 'operator', { directory: true, workspace: false, dns: false });

@@ -1,128 +1,146 @@
 #0 building with "desktop-linux" instance using docker driver
 
-#1 [build 1/7] FROM docker.io/library/node:24-alpine@sha256:8a32c8cf649a49915a66e81e7a609223c708d0adabf288ee3f4077d765542f85
-#1 resolve docker.io/library/node:24-alpine@sha256:8a32c8cf649a49915a66e81e7a609223c708d0adabf288ee3f4077d765542f85 0.0s done
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.03kB done
 #1 DONE 0.0s
 
-#2 [internal] load build definition from Dockerfile
-#2 transferring dockerfile: 1.03kB done
-#2 DONE 0.0s
+#2 [internal] load metadata for docker.io/library/node:24-alpine@sha256:8a32c8cf649a49915a66e81e7a609223c708d0adabf288ee3f4077d765542f85
+#2 DONE 0.8s
 
-#3 [internal] load metadata for docker.io/library/node:24-alpine@sha256:8a32c8cf649a49915a66e81e7a609223c708d0adabf288ee3f4077d765542f85
+#3 [internal] load .dockerignore
+#3 transferring context: 135B done
 #3 DONE 0.0s
 
-#4 [internal] load .dockerignore
-#4 transferring context: 135B done
+#4 [build 1/8] FROM docker.io/library/node:24-alpine@sha256:8a32c8cf649a49915a66e81e7a609223c708d0adabf288ee3f4077d765542f85
+#4 resolve docker.io/library/node:24-alpine@sha256:8a32c8cf649a49915a66e81e7a609223c708d0adabf288ee3f4077d765542f85 0.0s done
 #4 DONE 0.0s
 
 #5 [internal] load build context
-#5 transferring context: 10.61kB done
+#5 transferring context: 137.79kB 0.0s done
 #5 DONE 0.0s
 
-#6 [build 2/7] WORKDIR /app
+#6 [build 3/8] RUN apk add --no-cache openssl=3.5.9-r0
 #6 CACHED
 
-#7 [build 4/8] COPY package.json package-lock.json ./
+#7 [build 2/8] WORKDIR /app
 #7 CACHED
 
-#8 [build 3/8] RUN apk add --no-cache openssl=3.5.9-r0
-#8 CACHED
+#8 [build 4/8] COPY package.json package-lock.json ./
+#8 DONE 0.0s
 
 #9 [build 5/8] RUN npm ci --ignore-scripts
-#9 CACHED
+#9 2.796
+#9 2.796 added 61 packages, and audited 62 packages in 3s
+#9 2.796
+#9 2.796 22 packages are looking for funding
+#9 2.796   run `npm fund` for details
+#9 2.797
+#9 2.797 found 0 vulnerabilities
+#9 2.798 npm notice
+#9 2.798 npm notice New major version of npm available! 11.19.1 -> 12.2.1
+#9 2.798 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+#9 2.798 npm notice To update run: npm install -g npm@12.2.1
+#9 2.798 npm notice
+#9 DONE 3.3s
 
 #10 [build 6/8] COPY . .
-#10 DONE 0.0s
+#10 DONE 0.1s
 
 #11 [build 7/8] RUN npm run typecheck && npm test && npm run build
-#11 0.254
-#11 0.254 > saasops-reliability-lab@1.0.0 typecheck
-#11 0.254 > tsc --noEmit && tsc -p tsconfig.web.json
-#11 0.254
-#11 1.068
-#11 1.068 > saasops-reliability-lab@1.0.0 test
-#11 1.068 > node --import tsx --test --test-concurrency=1 test/*.test.ts
-#11 1.068
-#11 1.667 ✔ real HTTP and DNS probes distinguish healthy, status failure and DNS failure (112.794917ms)
-#11 1.696 ✔ incident recovery requires the state machine, version and two fresh successes (27.008ms)
-#11 1.715 ✔ duplicate incidents are suppressed while unresolved and dependency overlap stays a candidate (22.0115ms)
-#11 1.732 ✔ unobserved, stale and rapidly sampled windows do not become eligible availability claims (17.306875ms)
-#11 1.764 ✔ collection concurrency, minimum intervals and long-gap failures are bounded (13.642125ms)
-#11 1.817 ✔ signed backup restore is independently approved, version bound and idempotent (66.776292ms)
-#11 1.840 ✔ backup edits, foreign tenants, stale configuration and changed approvals cannot restore (24.681292ms)
-#11 1.840 ✔ fixed target configuration rejects arbitrary endpoints, credentials and dependency cycles (1.271375ms)
-#11 1.843 ✔ configured probes reject private and metadata ranges before connecting (0.77825ms)
-#11 1.889 ✔ HTTP API enforces operation roles, tenant isolation and fixed collection input (50.141666ms)
-#11 1.896 ✔ real TLS handshake verifies trusted hostname and reports expiration threshold (6.814333ms)
-#11 1.902 ✔ real TLS rejects untrusted certificates and hostname mismatch (4.472125ms)
-#11 1.904 ✔ a regularly observed hour has an eligible sample ratio and explicit budget arithmetic (3.178542ms)
-#11 2.137 ✔ bounded observation retention preserves incident-referenced evidence (233.0095ms)
-#11 2.880 ✔ signed access tokens map application permissions from the server registry (18.279ms)
-#11 2.884 ✔ access-token constraint: issuer (2.476ms)
-#11 2.889 ✔ access-token constraint: audience (3.873125ms)
-#11 2.890 ✔ access-token constraint: expired (1.927792ms)
-#11 2.899 ✔ access-token constraint: future (1.812042ms)
-#11 2.916 ✔ access-token constraint: lifetime (10.396625ms)
-#11 2.980 ✔ access-token constraint: subject (72.057792ms)
-#11 2.990 ✔ access-token constraint: type (2.599584ms)
-#11 2.995 ✔ access-token constraint: jti (10.232417ms)
-#11 2.999 ✔ access-token constraint: forged-privileges (5.169458ms)
-#11 3.005 ✔ missing, malformed, foreign, symmetric and oversized bearer tokens fail closed (6.556834ms)
-#11 3.448 ✔ RS256 public verification works and private JWKS or duplicate registry subjects reject (245.537459ms)
-#11 3.449 ✔ canonical request fingerprints preserve order of arrays and ignore object key order (5.28825ms)
-#11 3.449 ✔ rate buckets expire, enforce capacity and reject excess requests (1.111084ms)
-#11 3.450 ✔ audit edits and middle deletion fail verification; persistence and wrong-key checks work (68.531292ms)
-#11 3.456 ✔ nested transactions roll back only the failed nested savepoint (2.049375ms)
-#11 3.457 ✔ independent review and execution reject self-approval even with combined roles (3.97975ms)
-#11 3.458 ✔ approval expiry, changed policy, wrong digest and rejection prevent dispatch (3.320584ms)
-#11 3.458 ✔ idempotency binds actor and exact operation and never claims a completed plan twice (2.662542ms)
-#11 3.498 ✔ HTTP boundary rejects untrusted origins, hosts, tokens, oversized bodies and excess traffic (131.814751ms)
-#11 3.498 ✔ fixed endpoint transport refuses unsafe URL shapes, redirects, oversized and malformed responses (16.348708ms)
-#11 3.499 ✔ completed operation replay remains read-only after reopening durable state (12.234708ms)
-#11 3.499 ✔ a failed transaction start leaves the next request in a fresh immediate transaction (0.50775ms)
-#11 3.511 ℹ tests 37
-#11 3.511 ℹ suites 0
-#11 3.511 ℹ pass 37
-#11 3.511 ℹ fail 0
-#11 3.511 ℹ cancelled 0
-#11 3.511 ℹ skipped 0
-#11 3.511 ℹ todo 0
-#11 3.511 ℹ duration_ms 2415.298668
-#11 3.616
-#11 3.616 > saasops-reliability-lab@1.0.0 build
-#11 3.616 > tsc && node scripts/build-web.mjs
-#11 3.616
-#11 DONE 3.9s
+#11 0.273
+#11 0.273 > saasops-reliability-lab@1.0.1 typecheck
+#11 0.273 > tsc --noEmit && tsc -p tsconfig.web.json
+#11 0.273
+#11 1.149
+#11 1.149 > saasops-reliability-lab@1.0.1 test
+#11 1.149 > node --import tsx --test --test-concurrency=1 test/*.test.ts
+#11 1.149
+#11 1.675 ✔ real HTTP and DNS probes distinguish healthy, status failure and DNS failure (104.037334ms)
+#11 1.700 ✔ incident recovery requires the state machine, version and two fresh successes (24.893917ms)
+#11 1.713 ✔ duplicate incidents are suppressed while unresolved and dependency overlap stays a candidate (13.800875ms)
+#11 1.731 ✔ unobserved, stale and rapidly sampled windows do not become eligible availability claims (18.106417ms)
+#11 1.743 ✔ collection concurrency, minimum intervals and long-gap failures are bounded (10.830458ms)
+#11 1.750 ✔ signed backup restore is independently approved, version bound and idempotent (7.10275ms)
+#11 1.766 ✔ backup edits, foreign tenants, stale configuration and changed approvals cannot restore (13.235792ms)
+#11 1.767 ✔ fixed target configuration rejects arbitrary endpoints, credentials and dependency cycles (2.155125ms)
+#11 1.770 ✔ configured probes reject private and metadata ranges before connecting (1.186167ms)
+#11 2.019 ✔ absolute deadlines stop trickling HTTP headers and release collection for other targets (253.277791ms)
+#11 2.486 ✔ expired address lookup opens no late socket for either HTTP or TLS (465.707334ms)
+#11 2.710 ✔ silent TLS and DNS peers settle at the absolute deadline and release resources (224.922959ms)
+#11 2.757 ✔ demo fault authority follows the catalog owner, audits changes and fails closed (46.790667ms)
+#11 2.768 ✔ HTTP API enforces operation roles, tenant isolation and fixed collection input (11.327667ms)
+#11 2.773 ✔ real TLS handshake verifies trusted hostname and reports expiration threshold (5.322041ms)
+#11 2.778 ✔ real TLS rejects untrusted certificates and hostname mismatch (4.20425ms)
+#11 2.781 ✔ a regularly observed hour has an eligible sample ratio and explicit budget arithmetic (3.225167ms)
+#11 2.984 ✔ bounded observation retention preserves incident-referenced evidence (203.181834ms)
+#11 3.476 ✔ signed access tokens map application permissions from the server registry (11.869333ms)
+#11 3.478 ✔ access-token constraint: issuer (1.854916ms)
+#11 3.479 ✔ access-token constraint: audience (0.952792ms)
+#11 3.480 ✔ access-token constraint: expired (1.117375ms)
+#11 3.481 ✔ access-token constraint: future (1.058084ms)
+#11 3.482 ✔ access-token constraint: lifetime (0.873375ms)
+#11 3.483 ✔ access-token constraint: subject (0.824458ms)
+#11 3.484 ✔ access-token constraint: type (0.882667ms)
+#11 3.485 ✔ access-token constraint: jti (0.843916ms)
+#11 3.486 ✔ access-token constraint: forged-privileges (1.30725ms)
+#11 3.490 ✔ missing, malformed, foreign, symmetric and oversized bearer tokens fail closed (2.699958ms)
+#11 3.614 ✔ RS256 public verification works and private JWKS or duplicate registry subjects reject (31.4315ms)
+#11 3.615 ✔ canonical request fingerprints preserve order of arrays and ignore object key order (0.47025ms)
+#11 3.615 ✔ rate buckets expire, enforce capacity and reject excess requests (0.209958ms)
+#11 3.616 ✔ audit edits and middle deletion fail verification; persistence and wrong-key checks work (28.857875ms)
+#11 3.620 ✔ nested transactions roll back only the failed nested savepoint (0.905166ms)
+#11 3.621 ✔ independent review and execution reject self-approval even with combined roles (1.314958ms)
+#11 3.622 ✔ approval expiry, changed policy, wrong digest and rejection prevent dispatch (1.990833ms)
+#11 3.622 ✔ idempotency binds actor and exact operation and never claims a completed plan twice (1.57ms)
+#11 16.61 ✔ HTTP boundary rejects untrusted origins, hosts, tokens, oversized bodies and excess traffic (69.613042ms)
+#11 16.61 ✔ fixed endpoint transport refuses unsafe URL shapes, redirects, oversized and malformed responses (11.92325ms)
+#11 16.61 ✔ completed operation replay remains read-only after reopening durable state (25.5555ms)
+#11 16.61 ✔ a failed transaction start leaves the next request in a fresh immediate transaction (0.577833ms)
+#11 16.61 ✔ tenant audit quotas preserve other tenants and rejected transactions across restart (12941.396922ms)
+#11 16.62 ℹ tests 42
+#11 16.62 ℹ suites 0
+#11 16.62 ℹ pass 42
+#11 16.62 ℹ fail 0
+#11 16.62 ℹ cancelled 0
+#11 16.62 ℹ skipped 0
+#11 16.62 ℹ todo 0
+#11 16.62 ℹ duration_ms 15441.53534
+#11 16.70
+#11 16.70 > saasops-reliability-lab@1.0.1 build
+#11 16.70 > tsc && node scripts/build-web.mjs
+#11 16.70
+#11 DONE 17.0s
 
 #12 [build 8/8] RUN npm prune --omit=dev --ignore-scripts
-#12 2.624
-#12 2.624 removed 11 packages, and audited 51 packages in 2s
-#12 2.624
-#12 2.624 21 packages are looking for funding
-#12 2.624   run `npm fund` for details
-#12 2.625
-#12 2.625 found 0 vulnerabilities
-#12 DONE 2.7s
+#12 2.192
+#12 2.192 removed 11 packages, and audited 51 packages in 2s
+#12 2.192
+#12 2.193 21 packages are looking for funding
+#12 2.193   run `npm fund` for details
+#12 2.193
+#12 2.193 found 0 vulnerabilities
+#12 DONE 2.3s
 
 #13 [runtime 3/6] COPY --from=build /app/node_modules ./node_modules
-#13 CACHED
+#13 DONE 0.3s
 
 #14 [runtime 4/6] COPY --from=build /app/package.json /app/package-lock.json ./
-#14 CACHED
+#14 DONE 0.0s
 
 #15 [runtime 5/6] COPY --from=build /app/dist/src ./dist/src
-#15 CACHED
+#15 DONE 0.0s
 
 #16 [runtime 6/6] COPY --from=build /app/dist/web ./dist/web
-#16 DONE 0.1s
+#16 DONE 0.0s
 
 #17 exporting to image
-#17 exporting layers 0.1s done
-#17 exporting manifest sha256:e360d86ccb839523910643368a02c37316e17dd1db62cd97c4c07cb773bf5a3e 0.0s done
-#17 exporting config sha256:3fcb05dd97b31a8834890bd3cda93d6106ba0ccfafd2239e94cba71f42f19fb0 done
-#17 exporting attestation manifest sha256:1c6fde5c9f27ce77c10b025357d62b6fe5084be920d97842b4a48a70dd4993e3 0.0s done
-#17 exporting manifest list sha256:564d23ebcd75220d5a0a1c0991e32ba9a73ab0c400e22dccbb3afe92f8c3cbf4 0.0s done
+#17 exporting layers
+#17 exporting layers 0.5s done
+#17 exporting manifest sha256:3cd2b6f37b9606c681615ebb4cc06605e246a521d10192eba5e39973e2f7a822 0.0s done
+#17 exporting config sha256:9ad37564204b0e675a0e957ce9b4225e251e92a73ed674f98deca12d813a31aa done
+#17 exporting attestation manifest sha256:22273549d0d2c665a4e9af10d73e31c8ff6a892d859e63d5dabc27f23681281d 0.0s done
+#17 exporting manifest list sha256:8af6d0ce39125133151d1342b3d3b57ae7697eb9ead7e815f1c3459f2087823e 0.0s done
 #17 naming to docker.io/library/saasops-reliability-lab:local done
 #17 unpacking to docker.io/library/saasops-reliability-lab:local
-#17 unpacking to docker.io/library/saasops-reliability-lab:local 0.5s done
-#17 DONE 0.7s
+#17 unpacking to docker.io/library/saasops-reliability-lab:local 0.3s done
+#17 DONE 0.9s

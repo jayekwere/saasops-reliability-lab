@@ -110,100 +110,140 @@ function publicAddress(address: string) {
   return !blocked.check(address, isIP(address) === 6 ? 'ipv6' : 'ipv4');
 }
 /** Resolve once per probe and pin the checked address at the socket boundary for TLS. */
-async function addresses(host: string, allowLocal: boolean) {
-  const list = isIP(host)
-    ? [{ address: host, family: isIP(host) }]
-    : await lookup(host, { all: true });
+type LookupHost = (host: string) => Promise<{ address: string; family: number }[]>;
+async function addresses(host: string, allowLocal: boolean, lookupHost: LookupHost) {
+  const list = isIP(host) ? [{ address: host, family: isIP(host) }] : await lookupHost(host);
   if (!list.length || (!allowLocal && list.some((x) => !publicAddress(x.address))))
     throw new Fault(403, 'probe_destination_rejected');
   return list;
 }
 export async function probe(
   target: Target,
-  options: { allowLocal?: boolean; ca?: string; timeout?: number; now?: () => number } = {},
+  options: {
+    allowLocal?: boolean;
+    ca?: string;
+    timeout?: number;
+    now?: () => number;
+    lookupHost?: LookupHost;
+  } = {},
 ): Promise<Omit<Observation, 'id'>> {
   const start = performance.now(),
     at = new Date((options.now ?? Date.now)()).toISOString(),
     allowLocal = options.allowLocal ?? false,
-    timeout = options.timeout ?? 2000;
+    timeout = z
+      .number()
+      .int()
+      .min(10)
+      .max(10000)
+      .parse(options.timeout ?? 2000),
+    lookupHost = options.lookupHost ?? ((host: string) => lookup(host, { all: true }));
   let success = false,
     reason = 'unavailable',
     detail: Record<string, unknown> = {};
+  let expired = false;
+  let cleanup: () => void = () => {};
+  let timer: ReturnType<typeof setTimeout>;
+  const assertActive = () => {
+    if (expired) throw new Fault(504, 'probe_deadline_exceeded');
+  };
+  const deadline = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      expired = true;
+      cleanup();
+      reject(new Fault(504, 'probe_deadline_exceeded'));
+    }, timeout);
+  });
   try {
-    if (target.kind === 'http') {
-      const url = fixedUrl(target.url, allowLocal),
-        hostname = url.hostname.replace(/^\[|\]$/g, ''),
-        resolved = await addresses(hostname, allowLocal),
-        address = resolved.find((x) => x.family === 4) ?? resolved[0]!;
-      const status = await new Promise<number>((resolve, reject) => {
-        const requester = url.protocol === 'https:' ? httpsRequest : httpRequest;
-        const request = requester(
-          {
-            protocol: url.protocol,
-            hostname: address.address,
-            port: url.port || undefined,
-            path: url.pathname,
-            method: 'GET',
-            servername: isIP(hostname) ? '' : hostname,
-            headers: { host: url.host, 'user-agent': 'saasops-reliability-lab/1.0' },
-            agent: false,
-            maxHeaderSize: 16384,
-            rejectUnauthorized: true,
-            ...(options.ca ? { ca: options.ca } : {}),
-          },
-          (response) => {
-            const status = response.statusCode ?? 0;
-            response.destroy();
-            resolve(status);
-          },
-        );
-        request.setTimeout(timeout, () => request.destroy(new Error('timeout')));
-        request.once('error', reject);
-        request.end();
-      });
-      success = status === target.expectedStatus;
-      reason = success ? 'expected-status' : 'unexpected-status';
-      detail = { status, expected: target.expectedStatus };
-    } else if (target.kind === 'dns') {
-      const resolver = new Resolver({ timeout, tries: 1 });
-      if (target.resolver) resolver.setServers([target.resolver]);
-      const records = await resolver.resolve4(target.hostname);
-      success =
-        records.length > 0 &&
-        records.every((a) => target.expectedAddresses.includes(a)) &&
-        target.expectedAddresses.every((a) => records.includes(a));
-      reason = success ? 'expected-addresses' : 'dns-answer-mismatch';
-      detail = { addresses: records.sort(), expected: target.expectedAddresses };
-    } else {
-      const choices = await addresses(target.hostname, allowLocal),
-        address = choices.find((x) => x.family === 4) ?? choices[0]!;
-      const info = await new Promise<{ days: number; authorized: boolean }>((resolve, reject) => {
-        const socket = tlsConnect(
-          {
-            host: address.address,
-            port: target.port,
-            ...(isIP(target.hostname) ? {} : { servername: target.hostname }),
-            rejectUnauthorized: true,
-            ...(options.ca ? { ca: options.ca } : {}),
-          },
-          () => {
-            const certificate = socket.getPeerCertificate();
-            const days = (Date.parse(certificate.valid_to) - Date.now()) / 86400000;
-            const authorized = socket.authorized;
-            socket.end();
-            resolve({ days, authorized });
-          },
-        );
-        socket.setTimeout(timeout, () => {
-          socket.destroy();
-          reject(new Error('timeout'));
-        });
-        socket.once('error', reject);
-      });
-      success = info.authorized && info.days >= target.minimumDays;
-      reason = success ? 'trusted-certificate' : 'certificate-expiring';
-      detail = { remainingDays: Math.floor(info.days), minimumDays: target.minimumDays };
-    }
+    await Promise.race([
+      deadline,
+      (async () => {
+        if (target.kind === 'http') {
+          const url = fixedUrl(target.url, allowLocal),
+            hostname = url.hostname.replace(/^\[|\]$/g, ''),
+            resolved = await addresses(hostname, allowLocal, lookupHost),
+            address = resolved.find((x) => x.family === 4) ?? resolved[0]!;
+          // An OS resolver may finish after the deadline. It must never open a late socket.
+          assertActive();
+          const status = await new Promise<number>((resolve, reject) => {
+            const requester = url.protocol === 'https:' ? httpsRequest : httpRequest;
+            const request = requester(
+              {
+                protocol: url.protocol,
+                hostname: address.address,
+                port: url.port || undefined,
+                path: url.pathname,
+                method: 'GET',
+                servername: isIP(hostname) ? '' : hostname,
+                headers: { host: url.host, 'user-agent': 'saasops-reliability-lab/1.0' },
+                agent: false,
+                maxHeaderSize: 16384,
+                rejectUnauthorized: true,
+                ...(options.ca ? { ca: options.ca } : {}),
+              },
+              (response) => {
+                const status = response.statusCode ?? 0;
+                response.destroy();
+                resolve(status);
+              },
+            );
+            cleanup = () => request.destroy();
+            request.setTimeout(timeout, () => request.destroy(new Error('timeout')));
+            request.once('error', reject);
+            request.end();
+          });
+          assertActive();
+          success = status === target.expectedStatus;
+          reason = success ? 'expected-status' : 'unexpected-status';
+          detail = { status, expected: target.expectedStatus };
+        } else if (target.kind === 'dns') {
+          const resolver = new Resolver({ timeout, tries: 1 });
+          cleanup = () => resolver.cancel();
+          assertActive();
+          if (target.resolver) resolver.setServers([target.resolver]);
+          const records = await resolver.resolve4(target.hostname);
+          assertActive();
+          success =
+            records.length > 0 &&
+            records.every((a) => target.expectedAddresses.includes(a)) &&
+            target.expectedAddresses.every((a) => records.includes(a));
+          reason = success ? 'expected-addresses' : 'dns-answer-mismatch';
+          detail = { addresses: records.sort(), expected: target.expectedAddresses };
+        } else {
+          const choices = await addresses(target.hostname, allowLocal, lookupHost),
+            address = choices.find((x) => x.family === 4) ?? choices[0]!;
+          assertActive();
+          const info = await new Promise<{ days: number; authorized: boolean }>(
+            (resolve, reject) => {
+              const socket = tlsConnect(
+                {
+                  host: address.address,
+                  port: target.port,
+                  ...(isIP(target.hostname) ? {} : { servername: target.hostname }),
+                  rejectUnauthorized: true,
+                  ...(options.ca ? { ca: options.ca } : {}),
+                },
+                () => {
+                  const certificate = socket.getPeerCertificate();
+                  const days = (Date.parse(certificate.valid_to) - Date.now()) / 86400000;
+                  const authorized = socket.authorized;
+                  resolve({ days, authorized });
+                },
+              );
+              cleanup = () => socket.destroy();
+              socket.setTimeout(timeout, () => {
+                socket.destroy();
+                reject(new Error('timeout'));
+              });
+              socket.once('error', reject);
+            },
+          );
+          assertActive();
+          success = info.authorized && info.days >= target.minimumDays;
+          reason = success ? 'trusted-certificate' : 'certificate-expiring';
+          detail = { remainingDays: Math.floor(info.days), minimumDays: target.minimumDays };
+        }
+      })(),
+    ]);
   } catch (e) {
     const code = e instanceof Error && 'code' in e ? String(e.code) : '';
     reason =
@@ -215,6 +255,9 @@ export async function probe(
             ? e.code
             : 'probe-unavailable';
     detail = { code: /^[A-Z0-9_]{1,80}$/.test(code) ? code : 'unavailable' };
+  } finally {
+    clearTimeout(timer!);
+    cleanup();
   }
   return {
     target: target.id,

@@ -1,72 +1,77 @@
 
-> saasops-reliability-lab@1.0.0 verify
+> saasops-reliability-lab@1.0.1 verify
 > npm run format:check && npm run typecheck && npm test && npm run build && npm run demo
 
 
-> saasops-reliability-lab@1.0.0 format:check
+> saasops-reliability-lab@1.0.1 format:check
 > prettier --check .
 
 Checking formatting...
 All matched files use Prettier code style!
 
-> saasops-reliability-lab@1.0.0 typecheck
+> saasops-reliability-lab@1.0.1 typecheck
 > tsc --noEmit && tsc -p tsconfig.web.json
 
 
-> saasops-reliability-lab@1.0.0 test
+> saasops-reliability-lab@1.0.1 test
 > node --import tsx --test --test-concurrency=1 test/*.test.ts
 
-✔ real HTTP and DNS probes distinguish healthy, status failure and DNS failure (103.420292ms)
-✔ incident recovery requires the state machine, version and two fresh successes (15.070833ms)
-✔ duplicate incidents are suppressed while unresolved and dependency overlap stays a candidate (9.248875ms)
-✔ unobserved, stale and rapidly sampled windows do not become eligible availability claims (13.851584ms)
-✔ collection concurrency, minimum intervals and long-gap failures are bounded (9.264542ms)
-✔ signed backup restore is independently approved, version bound and idempotent (3.902084ms)
-✔ backup edits, foreign tenants, stale configuration and changed approvals cannot restore (5.235916ms)
-✔ fixed target configuration rejects arbitrary endpoints, credentials and dependency cycles (1.056708ms)
-✔ configured probes reject private and metadata ranges before connecting (0.473625ms)
-✔ HTTP API enforces operation roles, tenant isolation and fixed collection input (26.056167ms)
-✔ real TLS handshake verifies trusted hostname and reports expiration threshold (7.951375ms)
-✔ real TLS rejects untrusted certificates and hostname mismatch (3.7365ms)
-✔ a regularly observed hour has an eligible sample ratio and explicit budget arithmetic (1.765083ms)
-✔ bounded observation retention preserves incident-referenced evidence (131.546334ms)
-✔ signed access tokens map application permissions from the server registry (14.496ms)
-✔ access-token constraint: issuer (1.284083ms)
-✔ access-token constraint: audience (0.608667ms)
-✔ access-token constraint: expired (0.617708ms)
-✔ access-token constraint: future (0.575917ms)
-✔ access-token constraint: lifetime (1.020291ms)
-✔ access-token constraint: subject (0.48725ms)
-✔ access-token constraint: type (0.528167ms)
-✔ access-token constraint: jti (0.52875ms)
-✔ access-token constraint: forged-privileges (0.523458ms)
-✔ missing, malformed, foreign, symmetric and oversized bearer tokens fail closed (1.597416ms)
-✔ RS256 public verification works and private JWKS or duplicate registry subjects reject (23.926208ms)
-✔ canonical request fingerprints preserve order of arrays and ignore object key order (0.282041ms)
-✔ rate buckets expire, enforce capacity and reject excess requests (0.143042ms)
-✔ audit edits and middle deletion fail verification; persistence and wrong-key checks work (5.491875ms)
-✔ nested transactions roll back only the failed nested savepoint (0.507667ms)
-✔ independent review and execution reject self-approval even with combined roles (0.848458ms)
-✔ approval expiry, changed policy, wrong digest and rejection prevent dispatch (0.732625ms)
-✔ idempotency binds actor and exact operation and never claims a completed plan twice (0.851167ms)
-✔ HTTP boundary rejects untrusted origins, hosts, tokens, oversized bodies and excess traffic (58.521333ms)
-✔ fixed endpoint transport refuses unsafe URL shapes, redirects, oversized and malformed responses (16.679541ms)
-✔ completed operation replay remains read-only after reopening durable state (5.02275ms)
-✔ a failed transaction start leaves the next request in a fresh immediate transaction (0.316417ms)
-ℹ tests 37
+✔ real HTTP and DNS probes distinguish healthy, status failure and DNS failure (253.05225ms)
+✔ incident recovery requires the state machine, version and two fresh successes (17.410042ms)
+✔ duplicate incidents are suppressed while unresolved and dependency overlap stays a candidate (10.390666ms)
+✔ unobserved, stale and rapidly sampled windows do not become eligible availability claims (14.601166ms)
+✔ collection concurrency, minimum intervals and long-gap failures are bounded (10.9375ms)
+✔ signed backup restore is independently approved, version bound and idempotent (4.418542ms)
+✔ backup edits, foreign tenants, stale configuration and changed approvals cannot restore (5.606833ms)
+✔ fixed target configuration rejects arbitrary endpoints, credentials and dependency cycles (0.895959ms)
+✔ configured probes reject private and metadata ranges before connecting (0.767292ms)
+✔ absolute deadlines stop trickling HTTP headers and release collection for other targets (251.653375ms)
+✔ expired address lookup opens no late socket for either HTTP or TLS (464.017583ms)
+✔ silent TLS and DNS peers settle at the absolute deadline and release resources (224.069625ms)
+✔ demo fault authority follows the catalog owner, audits changes and fails closed (36.718667ms)
+✔ HTTP API enforces operation roles, tenant isolation and fixed collection input (7.394166ms)
+✔ real TLS handshake verifies trusted hostname and reports expiration threshold (15.250792ms)
+✔ real TLS rejects untrusted certificates and hostname mismatch (4.059167ms)
+✔ a regularly observed hour has an eligible sample ratio and explicit budget arithmetic (1.933458ms)
+✔ bounded observation retention preserves incident-referenced evidence (141.592542ms)
+✔ signed access tokens map application permissions from the server registry (14.031042ms)
+✔ access-token constraint: issuer (1.240666ms)
+✔ access-token constraint: audience (0.760792ms)
+✔ access-token constraint: expired (0.685667ms)
+✔ access-token constraint: future (0.517167ms)
+✔ access-token constraint: lifetime (0.600167ms)
+✔ access-token constraint: subject (0.619875ms)
+✔ access-token constraint: type (2.13525ms)
+✔ access-token constraint: jti (0.597709ms)
+✔ access-token constraint: forged-privileges (0.781583ms)
+✔ missing, malformed, foreign, symmetric and oversized bearer tokens fail closed (1.658792ms)
+✔ RS256 public verification works and private JWKS or duplicate registry subjects reject (17.490792ms)
+✔ canonical request fingerprints preserve order of arrays and ignore object key order (0.290792ms)
+✔ rate buckets expire, enforce capacity and reject excess requests (0.143958ms)
+✔ audit edits and middle deletion fail verification; persistence and wrong-key checks work (8.566167ms)
+✔ nested transactions roll back only the failed nested savepoint (0.6365ms)
+✔ independent review and execution reject self-approval even with combined roles (1.059875ms)
+✔ approval expiry, changed policy, wrong digest and rejection prevent dispatch (0.938ms)
+✔ idempotency binds actor and exact operation and never claims a completed plan twice (1.579917ms)
+✔ HTTP boundary rejects untrusted origins, hosts, tokens, oversized bodies and excess traffic (66.293167ms)
+✔ fixed endpoint transport refuses unsafe URL shapes, redirects, oversized and malformed responses (18.405458ms)
+✔ completed operation replay remains read-only after reopening durable state (4.964125ms)
+✔ a failed transaction start leaves the next request in a fresh immediate transaction (0.430709ms)
+✔ tenant audit quotas preserve other tenants and rejected transactions across restart (3313.874334ms)
+ℹ tests 42
 ℹ suites 0
-ℹ pass 37
+ℹ pass 42
 ℹ fail 0
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 1193.500709
+ℹ duration_ms 6243.113958
 
-> saasops-reliability-lab@1.0.0 build
+> saasops-reliability-lab@1.0.1 build
 > tsc && node scripts/build-web.mjs
 
 
-> saasops-reliability-lab@1.0.0 demo
+> saasops-reliability-lab@1.0.1 demo
 > node --import tsx scripts/demo.ts
 
 {
@@ -74,8 +79,8 @@ All matched files use Prettier code style!
   "observations": 15,
   "incidentsOpened": 2,
   "incidentsResolved": 2,
-  "scriptedFailureDetectionMs": 1115,
-  "scriptedRecoveryVerificationMs": 1125,
+  "scriptedFailureDetectionMs": 1116,
+  "scriptedRecoveryVerificationMs": 1115,
   "configurationRestored": true,
   "configVersion": 3,
   "auditIntegrity": true

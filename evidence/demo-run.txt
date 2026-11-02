@@ -1,5 +1,5 @@
 
-> saasops-reliability-lab@1.0.0 demo
+> saasops-reliability-lab@1.0.1 demo
 > node --import tsx scripts/demo.ts --write
 
 {
@@ -7,8 +7,8 @@
   "observations": 15,
   "incidentsOpened": 2,
   "incidentsResolved": 2,
-  "scriptedFailureDetectionMs": 1126,
-  "scriptedRecoveryVerificationMs": 1126,
+  "scriptedFailureDetectionMs": 1113,
+  "scriptedRecoveryVerificationMs": 1114,
   "configurationRestored": true,
   "configVersion": 3,
   "auditIntegrity": true

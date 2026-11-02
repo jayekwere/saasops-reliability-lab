@@ -14,8 +14,9 @@ export function createApp(o: {
   tenant?: string;
   faults?: { directory: boolean; workspace: boolean; dns: boolean };
 }) {
+  const ownerTenant = o.tenant ?? 'sandbox';
   const app = secureApp(o.auth, o.store, o.baseUrl, o.webRoot),
-    service = new Reliability(o.store, o.targets, o.allowLocal, {}, o.tenant);
+    service = new Reliability(o.store, o.targets, o.allowLocal, {}, ownerTenant);
   planRoutes(app, service.book);
   app.get('/api/overview', async (req) => {
     requireRole(req.identity, 'viewer', 'operator', 'requester', 'reviewer');
@@ -78,10 +79,12 @@ export function createApp(o: {
   if (o.faults)
     app.post('/api/demo/fault', async (req) => {
       requireRole(req.identity, 'operator');
+      if (req.identity.tenant !== ownerTenant) throw new Fault(403, 'demo_tenant_not_authorized');
       const b = z
         .object({ directory: z.boolean(), workspace: z.boolean(), dns: z.boolean() })
         .strict()
         .parse(req.body);
+      o.store.tx(() => o.store.audit(req.identity, 'demo.fault-changed', 'completed', b));
       Object.assign(o.faults!, b);
       return { scope: 'local-http-and-dns-lab', ...b };
     });
